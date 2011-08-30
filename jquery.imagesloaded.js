@@ -7,16 +7,18 @@
 
 // original: mit license. paul irish. 2010.
 // contributors: Yiannis Chatzikonstantinou, David DeSandro
-//   Oren Solomianik, Adam J. Sontag
+//   Oren Solomianik, Adam J. Sontag, Claudius Coenen
 
 $.fn.imagesLoaded = function( callback ) {
-  var $images = this.find('img'),
-      len = $images.length,
+  var urlPattern = /^url\(\s*["']?([^\s"']*)["']?\s*\)$/,
+      blank = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
+      $images = this.find('img'),
+      $backgroundUrls = findBackgrounds(this),
       _this = this,
-      blank = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+      len = $images.length + $backgroundUrls.length;
 
   function triggerCallback() {
-    callback.call( _this, $images );
+    callback.call( _this, $images, $backgroundUrls );
   }
 
   function imgLoaded() {
@@ -24,6 +26,21 @@ $.fn.imagesLoaded = function( callback ) {
       setTimeout( triggerCallback );
       $images.unbind( 'load error', imgLoaded );
     }
+  }
+
+  function findBackgrounds(jQueryElements) {
+    var elemsWithBackground = [];
+
+
+    jQueryElements.find('.bg-preload').each(function () {
+      var element = $(this),
+          bg = element.css('background-image');
+
+      if (bg && bg.match(urlPattern)) {
+        elemsWithBackground.push(RegExp.$1);
+      }
+    });
+    return $(elemsWithBackground);
   }
 
   if ( !len ) {
@@ -39,6 +56,12 @@ $.fn.imagesLoaded = function( callback ) {
       this.src = blank;
       this.src = src;
     }
+  });
+
+  $backgroundUrls.each(function (index, url) {
+	  var image = new Image();
+	  image.onload = imgLoaded;
+	  image.src = url;
   });
 
   return this;
