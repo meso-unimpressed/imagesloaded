@@ -13,12 +13,12 @@ $.fn.imagesLoaded = function( callback ) {
   var urlPattern = /^url\(\s*["']?([^\s"']*)["']?\s*\)$/,
       blank = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
       $images = this.find('img'),
-      $backgroundUrls = findBackgrounds(this),
+      backgroundUrls = findBackgrounds(this),
       _this = this,
-      len = $images.length + $backgroundUrls.length;
+      len = $images.length + backgroundUrls.length;
 
   function triggerCallback() {
-    callback.call( _this, $images, $backgroundUrls );
+    callback.call( _this, $images, backgroundUrls );
   }
 
   function imgLoaded() {
@@ -29,18 +29,17 @@ $.fn.imagesLoaded = function( callback ) {
   }
 
   function findBackgrounds(jQueryElements) {
-    var elemsWithBackground = [];
-
+    var urls = [];
 
     jQueryElements.find('.bg-preload').each(function () {
       var element = $(this),
           bg = element.css('background-image');
 
       if (bg && bg.match(urlPattern)) {
-        elemsWithBackground.push(RegExp.$1);
+        urls.push(RegExp.$1);
       }
     });
-    return $(elemsWithBackground);
+    return urls;
   }
 
   if ( !len ) {
@@ -58,7 +57,7 @@ $.fn.imagesLoaded = function( callback ) {
     }
   });
 
-  $backgroundUrls.each(function (index, url) {
+  $.each(backgroundUrls, function (index, url) {
 	  var image = new Image();
 	  image.onload = imgLoaded;
 	  image.src = url;
